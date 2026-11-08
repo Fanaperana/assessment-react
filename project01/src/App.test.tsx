@@ -1,11 +1,17 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import { productFixture } from './test/productFixture'
 
-// Example test. Replace it with real tests as you build the app.
+afterEach(() => { vi.unstubAllGlobals(); localStorage.clear() })
 describe('App', () => {
-  it('renders the app title', () => {
+  it('loads and displays products using mocked fetch', async () => {
+    vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(url.includes('category-list') ? ['smartphones'] : { products: [productFixture], total: 1, skip: 0, limit: 0 }),
+    })))
     render(<App />)
-    expect(screen.getByRole('heading', { name: /shoplite/i })).toBeInTheDocument()
+    expect(await screen.findByText('Demo Phone')).toBeInTheDocument()
+    expect(fetch).toHaveBeenCalled()
   })
 })

@@ -6,7 +6,9 @@ afterEach(() => vi.useRealTimers())
 describe('useDebounce', () => {
   it('waits before publishing a changed value', () => {
     vi.useFakeTimers()
-    const { result, rerender } = renderHook(({ value }) => useDebounce(value, 400), { initialProps: { value: 'a' } })
+    const { result, rerender } = renderHook(({ value }) => useDebounce(value, 400), {
+      initialProps: { value: 'a' },
+    })
     rerender({ value: 'b' })
     expect(result.current).toBe('a')
     act(() => vi.advanceTimersByTime(399))
@@ -16,7 +18,9 @@ describe('useDebounce', () => {
   })
   it('cancels the previous timer on a later change', () => {
     vi.useFakeTimers()
-    const { result, rerender } = renderHook(({ value }) => useDebounce(value, 400), { initialProps: { value: 'a' } })
+    const { result, rerender } = renderHook(({ value }) => useDebounce(value, 400), {
+      initialProps: { value: 'a' },
+    })
     rerender({ value: 'b' })
     act(() => vi.advanceTimersByTime(200))
     rerender({ value: 'c' })

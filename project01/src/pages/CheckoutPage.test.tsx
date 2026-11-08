@@ -1,14 +1,23 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { Link, MemoryRouter, Route, Routes } from 'react-router'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CartProvider } from '../context/CartContext'
+import { useCart } from '../hooks/useCart'
 import { productFixture } from '../test/productFixture'
 import { CheckoutPage } from './CheckoutPage'
 
-beforeEach(() => localStorage.setItem('shoplite-cart', JSON.stringify([{ product: productFixture, quantity: 1 }])))
+beforeEach(() =>
+  localStorage.setItem('shoplite-cart', JSON.stringify([{ product: productFixture, quantity: 1 }])),
+)
 
 function renderCheckout() {
-  return render(<CartProvider><MemoryRouter><CheckoutPage /></MemoryRouter></CartProvider>)
+  return render(
+    <CartProvider>
+      <MemoryRouter>
+        <CheckoutPage />
+      </MemoryRouter>
+    </CartProvider>,
+  )
 }
 
 describe('CheckoutPage', () => {
@@ -31,5 +40,49 @@ describe('CheckoutPage', () => {
     renderCheckout()
     fireEvent.blur(screen.getByLabelText('Email'))
     expect(screen.getByText('Enter a valid email address.')).toBeInTheDocument()
+  })
+  it('cancels the order when the customer leaves checkout', () => {
+    vi.useFakeTimers()
+    try {
+      function Shop() {
+        const { count } = useCart()
+        return <p>{count} item in cart</p>
+      }
+
+      render(
+        <CartProvider>
+          <MemoryRouter initialEntries={['/checkout']}>
+            <Link to="/shop">Shop</Link>
+            <Routes>
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/order/success" element={<p>Order placed</p>} />
+            </Routes>
+          </MemoryRouter>
+        </CartProvider>,
+      )
+
+      const validFields = {
+        'Full name': 'Jane Doe',
+        Email: 'jane@example.com',
+        Phone: '1234567890',
+        Address: '123 Test Street',
+        City: 'Testville',
+        'Postal code': '12345',
+      }
+      Object.entries(validFields).forEach(([label, value]) => {
+        fireEvent.change(screen.getByLabelText(label), { target: { value } })
+      })
+      fireEvent.click(screen.getByLabelText('Cash on delivery'))
+      fireEvent.click(screen.getByRole('button', { name: 'Place order' }))
+      fireEvent.click(screen.getByRole('link', { name: 'Shop' }))
+
+      act(() => vi.advanceTimersByTime(1000))
+      expect(screen.getByText('1 item in cart')).toBeInTheDocument()
+      expect(screen.queryByText('Order placed')).not.toBeInTheDocument()
+      expect(JSON.parse(localStorage.getItem('shoplite-cart') ?? '[]')).toHaveLength(1)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

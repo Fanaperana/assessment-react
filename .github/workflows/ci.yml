@@ -23,3 +23,35 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+  project02:
+    name: project02 — format, lint, test, build, e2e
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project02
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: project02/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      # The Playwright test (I6) runs only after the student adds a "test:e2e" script.
+      - name: Check for e2e tests
+        id: e2e
+        run: |
+          if node -e "process.exit(require('./package.json').scripts['test:e2e'] ? 0 : 1)"; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No test:e2e script yet. Skipping Playwright."
+          fi
+      - if: steps.e2e.outputs.enabled == 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.e2e.outputs.enabled == 'true'
+        run: npm run test:e2e

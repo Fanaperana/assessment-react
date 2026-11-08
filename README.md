@@ -5,6 +5,7 @@ Hands-on React projects. Each project lives in its own folder and has an `ASSIGN
 | # | Project | Topics | Folder |
 | --- | --- | --- | --- |
 | 01 | **ShopLite** — online shop front-end | components, hooks, custom hooks, Context + `useReducer`, React Router, data fetching, forms, accessibility, performance, testing | [`project01/`](project01/) |
+| 02 | **FlowBoard** — Kanban task board | Tailwind CSS, shadcn/ui, component architecture, compound components, normalized state, drag and drop with Pointer Events, optimistic updates, React 19 Actions, undo/redo, accessibility, MSW, Playwright | [`project02/`](project02/) |
 
 ## How to submit your work
 
@@ -14,13 +15,20 @@ Hands-on React projects. Each project lives in its own folder and has an `ASSIGN
    git clone https://github.com/<your-username>/assessment-react.git
    cd assessment-react
    ```
-3. **Create a branch** for the project:
+3. **Create a branch** for the project (use the project number):
    ```bash
    git checkout -b project01/<your-username>
    ```
+   Before a new project, update your fork first:
+   ```bash
+   git remote add upstream https://github.com/Fanaperana/assessment-react.git  # once
+   git checkout main
+   git pull upstream main
+   git push origin main
+   ```
 4. **Install and run** the project:
    ```bash
-   cd project01
+   cd project01   # or project02, ...
    npm install
    npm run dev
    ```
@@ -31,6 +39,7 @@ Hands-on React projects. Each project lives in its own folder and has an `ASSIGN
    npm run lint
    npm test
    npm run build
+   npm run format:check   # Project 02 and later
    ```
 7. **Push** your branch and open a **Pull Request** to `main` of this repository.
    Fill in the PR template checklist.

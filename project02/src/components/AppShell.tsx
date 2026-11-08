@@ -34,7 +34,11 @@ export function AppShell() {
             <div className="mx-3 h-5 w-px bg-border max-sm:hidden" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="max-w-52 gap-2" aria-label="Switch board">
+                <Button
+                  variant="outline"
+                  className="max-w-52 gap-2"
+                  aria-label={`Switch board, ${currentBoard?.title ?? 'All boards'}`}
+                >
                   <span className="truncate">{currentBoard?.title ?? 'All boards'}</span>
                   <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
                 </Button>

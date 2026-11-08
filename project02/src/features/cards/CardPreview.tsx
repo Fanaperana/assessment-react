@@ -70,8 +70,9 @@ export function CardPreview({
               </span>
             )}
             {card.description && (
-              <span aria-label="Has description">
-                <AlignLeft className="size-3" />
+              <span>
+                <AlignLeft aria-hidden="true" className="size-3" />
+                <span className="sr-only">Has description</span>
               </span>
             )}
           </div>

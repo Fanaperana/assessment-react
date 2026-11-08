@@ -14,6 +14,7 @@ export type BoardAction =
   | { type: 'ADD_COLUMN'; column: Column }
   | { type: 'PATCH_COLUMN'; column: Column }
   | { type: 'DELETE_COLUMN'; id: string }
+  | { type: 'RESTORE_COLUMN'; column: Column; cards: Card[] }
   | { type: 'MOVE_COLUMN'; id: string; position: number }
   | { type: 'ADD_CARD'; card: Card }
   | { type: 'PATCH_CARD'; card: Card }
@@ -87,6 +88,28 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
         columns[id] = { ...columns[id], position }
       })
       return { ...state, columnOrder, columns, cards, cardIdsByColumn }
+    }
+    case 'RESTORE_COLUMN': {
+      const columnOrder = [...state.columnOrder]
+      columnOrder.splice(Math.min(columnOrder.length, action.column.position), 0, action.column.id)
+      const columns = { ...state.columns, [action.column.id]: action.column }
+      columnOrder.forEach((id, position) => {
+        columns[id] = { ...columns[id], position }
+      })
+      const cards = { ...state.cards }
+      const ids = [...action.cards]
+        .sort((a, b) => a.position - b.position)
+        .map((card) => {
+          cards[card.id] = card
+          return card.id
+        })
+      return {
+        ...state,
+        columnOrder,
+        columns,
+        cards,
+        cardIdsByColumn: { ...state.cardIdsByColumn, [action.column.id]: ids },
+      }
     }
     case 'MOVE_COLUMN': {
       const columnOrder = state.columnOrder.filter((id) => id !== action.id)

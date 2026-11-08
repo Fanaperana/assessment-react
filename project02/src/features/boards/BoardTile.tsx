@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { ArrowRight, Layers3, MoreHorizontal, Rows3 } from 'lucide-react'
 import { Link } from 'react-router'
-import { toast } from 'sonner'
-import { api } from '@/api/client'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +32,7 @@ import type { BoardSummary } from '@/types/api'
 import { useBoards } from './useBoards'
 
 export function BoardTile({ board }: { board: BoardSummary }) {
-  const { updateLocal, reload } = useBoards()
+  const { renameBoard, deleteBoard } = useBoards()
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [title, setTitle] = useState(board.title)
@@ -47,36 +45,13 @@ export function BoardTile({ board }: { board: BoardSummary }) {
       return
     }
     setBusy(true)
-    updateLocal((boards) =>
-      boards.map((item) => (item.id === board.id ? { ...item, title: next } : item)),
-    )
-    try {
-      await api.updateBoard(board.id, next)
-      reload()
-      setRenameOpen(false)
-    } catch (reason) {
-      updateLocal((boards) => boards.map((item) => (item.id === board.id ? board : item)))
-      toast.error('Could not rename board', {
-        description: reason instanceof Error ? reason.message : undefined,
-        action: { label: 'Retry', onClick: rename },
-      })
-    } finally {
-      setBusy(false)
-    }
+    const saved = await renameBoard(board, next)
+    if (saved) setRenameOpen(false)
+    setBusy(false)
   }
 
-  async function remove() {
-    updateLocal((boards) => boards.filter((item) => item.id !== board.id))
-    try {
-      await api.deleteBoard(board.id)
-      reload()
-    } catch (reason) {
-      updateLocal((boards) => [...boards, board])
-      toast.error('Could not delete board', {
-        description: reason instanceof Error ? reason.message : undefined,
-        action: { label: 'Retry', onClick: remove },
-      })
-    }
+  function remove() {
+    void deleteBoard(board)
   }
 
   return (

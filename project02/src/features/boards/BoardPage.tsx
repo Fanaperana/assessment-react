@@ -1,23 +1,37 @@
-import { useDeferredValue, useEffect, useReducer, useState } from 'react'
+import { useDeferredValue, useEffect, useState } from 'react'
 import { Link, Outlet, useParams, useSearchParams } from 'react-router'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { ArrowLeft } from 'lucide-react'
 import { api, ApiError } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Priority } from '@/types/api'
 import { BoardFilters } from './BoardFilters'
-import { boardReducer, emptyBoard, selectVisibleCards } from './boardReducer'
+import { selectVisibleCards } from './boardReducer'
 import type { BoardState } from './boardReducer'
 import { Column } from './Column'
+import { useBoardStore } from './useBoardStore'
+import { useBoardMutations } from './useBoardMutations'
+import { AddColumnDialog } from './AddColumnDialog'
+import { useCardHistory } from '@/features/history/useCardHistory'
+import { useKeyboardDrag } from '@/features/dnd/useKeyboardDrag'
+import { usePointerDrag } from '@/features/dnd/usePointerDrag'
+import { DndContext } from '@/features/dnd/DndContext'
 
 export interface BoardOutlet {
   state: BoardState
+  actions: ReturnType<typeof useBoardMutations>
 }
 
 export function BoardPage() {
   const { boardId } = useParams()
   const [params, setParams] = useSearchParams()
-  const [state, dispatch] = useReducer(boardReducer, emptyBoard)
+  const { history, send, getState } = useBoardStore()
+  const state = history.present
+  const actions = useBoardMutations({ boardId: boardId ?? '', send, getState })
+  const moves = useCardHistory({ send, getState })
+  const keyboard = useKeyboardDrag(state, moves.moveCard)
+  const pointer = usePointerDrag(state, moves.moveCard, actions.moveColumn)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<{ id: string; cause: Error } | null>(null)
   const [version, setVersion] = useState(0)
@@ -37,7 +51,7 @@ export function BoardPage() {
     api
       .getBoard(boardId, controller.signal)
       .then((detail) => {
-        dispatch({ type: 'LOAD', detail })
+        send({ type: 'LOAD', detail })
         setLoading(false)
         setError(null)
       })
@@ -50,7 +64,7 @@ export function BoardPage() {
         })
       })
     return () => controller.abort()
-  }, [boardId, version])
+  }, [boardId, version, send])
 
   function changeFilter(key: 'q' | 'priority' | 'label', value: string) {
     setParams(
@@ -98,7 +112,11 @@ export function BoardPage() {
     )
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      onPointerDown={pointer.onPointerDown}
+      onClickCapture={pointer.onClickCapture}
+    >
       <div>
         <Link
           to="/"
@@ -109,11 +127,11 @@ export function BoardPage() {
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-sm text-muted-foreground">BOARD</p>
-            <h1 className="text-3xl font-semibold tracking-tight">{state.board.title}</h1>
+            <h1 id="board-title" tabIndex={-1} className="text-3xl font-semibold tracking-tight">
+              {state.board.title}
+            </h1>
           </div>
-          <Button variant="outline" disabled>
-            <Plus /> Add column
-          </Button>
+          <AddColumnDialog onAdd={actions.createColumn} />
         </div>
       </div>
       <BoardFilters
@@ -123,27 +141,59 @@ export function BoardPage() {
         labels={labels}
         onChange={changeFilter}
       />
+      <div aria-live="assertive" className="sr-only">
+        {keyboard.announcement}
+      </div>
       {state.columnOrder.length === 0 ? (
         <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
           This board has no columns yet.
         </div>
       ) : (
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6">
-          {state.columnOrder.map((id) => (
-            <Column
-              key={id}
-              column={state.columns[id]}
-              cards={selectVisibleCards(state, id, { q: deferredQ, priority, label })}
-              boardId={state.board!.id}
-              query={deferredQ}
-            >
-              <Column.Header />
-              <Column.Cards />
-            </Column>
-          ))}
-        </div>
+        <DndContext.Provider
+          value={{
+            activeId: keyboard.active?.id ?? pointer.drag?.id ?? null,
+            target:
+              keyboard.active?.target ??
+              (pointer.drag?.kind === 'card'
+                ? (pointer.drag.target as { columnId: string; position: number })
+                : null),
+            onCardKeyDown: keyboard.onCardKeyDown,
+          }}
+        >
+          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6">
+            {state.columnOrder.map((id) => (
+              <Column
+                key={id}
+                column={state.columns[id]}
+                cards={selectVisibleCards(state, id, { q: deferredQ, priority, label })}
+                boardId={state.board!.id}
+                query={deferredQ}
+                onRename={actions.renameColumn}
+                onDelete={actions.deleteColumn}
+                onAddCard={(columnId, title) => actions.createCard(columnId, { title })}
+              >
+                <Column.Header />
+                <Column.Cards />
+                <Column.AddCard />
+              </Column>
+            ))}
+          </div>
+        </DndContext.Provider>
       )}
-      <Outlet context={{ state } satisfies BoardOutlet} />
+      {pointer.drag &&
+        createPortal(
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed z-50 w-64 rounded-lg border bg-card p-3 shadow-xl"
+            style={{ left: pointer.drag.x + 12, top: pointer.drag.y + 12 }}
+          >
+            {pointer.drag.kind === 'card'
+              ? state.cards[pointer.drag.id]?.title
+              : state.columns[pointer.drag.id]?.title}
+          </div>,
+          document.body,
+        )}
+      <Outlet context={{ state, actions } satisfies BoardOutlet} />
     </div>
   )
 }

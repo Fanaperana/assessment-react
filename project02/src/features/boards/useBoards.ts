@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { BoardSummary } from '@/types/api'
+import type { Board, BoardSummary } from '@/types/api'
 
 interface BoardsValue {
   boards: BoardSummary[]
@@ -7,6 +7,9 @@ interface BoardsValue {
   error: string | null
   reload: () => void
   updateLocal: (updater: (boards: BoardSummary[]) => BoardSummary[]) => void
+  createBoard: (title: string) => Promise<Board>
+  renameBoard: (board: BoardSummary, title: string) => Promise<boolean>
+  deleteBoard: (board: BoardSummary) => Promise<void>
 }
 
 export const BoardsContext = createContext<BoardsValue | null>(null)

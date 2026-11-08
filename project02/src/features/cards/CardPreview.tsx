@@ -1,8 +1,9 @@
-import { AlignLeft, CalendarDays } from 'lucide-react'
+import { AlignLeft, CalendarDays, GripVertical } from 'lucide-react'
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Card as Surface, CardContent } from '@/components/ui/card'
 import type { Card } from '@/types/api'
+import { useDnd } from '@/features/dnd/DndContext'
 
 const today = new Date().toISOString().slice(0, 10)
 
@@ -16,6 +17,7 @@ export function CardPreview({
   query: string
 }) {
   const overdue = card.dueDate !== null && card.dueDate < today
+  const dnd = useDnd()
   const priorityClass =
     card.priority === 'high'
       ? 'border-red-300 bg-red-100 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200'
@@ -25,16 +27,29 @@ export function CardPreview({
 
   return (
     <Surface
+      data-card-id={card.id}
       size="sm"
       className="bg-card shadow-xs transition-shadow hover:shadow-md motion-reduce:transition-none"
     >
       <CardContent className="space-y-3">
-        <Link
-          to={`/boards/${boardId}/cards/${card.id}`}
-          className="block rounded-sm leading-snug font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-        >
-          <HighlightedTitle title={card.title} query={query} />
-        </Link>
+        <div className="flex items-start gap-1">
+          <button
+            type="button"
+            data-card-drag-handle
+            aria-label={`Drag ${card.title}`}
+            className="cursor-grab touch-none rounded p-1 focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            <GripVertical className="size-4" />
+          </button>
+          <Link
+            to={`/boards/${boardId}/cards/${card.id}`}
+            onKeyDown={(event) => dnd?.onCardKeyDown(event, card.id)}
+            aria-grabbed={dnd?.activeId === card.id}
+            className="block flex-1 rounded-sm leading-snug font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            <HighlightedTitle title={card.title} query={query} />
+          </Link>
+        </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline" className={priorityClass}>
             {card.priority}

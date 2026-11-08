@@ -2,7 +2,6 @@ import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Plus } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,14 +26,13 @@ function SubmitButton() {
 
 export function CreateBoardDialog() {
   const [open, setOpen] = useState(false)
-  const { reload } = useBoards()
+  const { createBoard } = useBoards()
   const navigate = useNavigate()
   const [error, action] = useActionState(async (_previous: string | null, formData: FormData) => {
     const title = String(formData.get('title') ?? '').trim()
     if (!title) return 'Enter a board title.'
     try {
-      const board = await api.createBoard(title)
-      reload()
+      const board = await createBoard(title)
       setOpen(false)
       navigate(`/boards/${board.id}`)
       return null

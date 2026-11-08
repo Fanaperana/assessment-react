@@ -8,8 +8,13 @@ interface Active {
   target: Location
 }
 
-export function useKeyboardDrag(state: BoardState, moveCard: (id: string, to: Location) => void) {
+export function useKeyboardDrag(
+  state: BoardState,
+  moveCard: (id: string, to: Location) => void,
+  moveColumn: (id: string, position: number) => Promise<void>,
+) {
   const [active, setActive] = useState<Active | null>(null)
+  const [activeColumn, setActiveColumn] = useState<{ id: string; position: number } | null>(null)
   const [announcement, setAnnouncement] = useState('')
 
   function onCardKeyDown(event: KeyboardEvent<HTMLElement>, id: string) {
@@ -22,6 +27,7 @@ export function useKeyboardDrag(state: BoardState, moveCard: (id: string, to: Lo
         setAnnouncement(`Dropped ${card.title}.`)
         setActive(null)
       } else {
+        setActiveColumn(null)
         setActive({ id, target: { columnId: card.columnId, position: card.position } })
         setAnnouncement(
           `Picked up ${card.title}. Use arrow keys to move, Space to drop, Escape to cancel.`,
@@ -58,5 +64,45 @@ export function useKeyboardDrag(state: BoardState, moveCard: (id: string, to: Lo
     )
   }
 
-  return { active, announcement, onCardKeyDown }
+  function onColumnKeyDown(event: KeyboardEvent<HTMLElement>, id: string) {
+    const column = state.columns[id]
+    if (!column) return
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      if (activeColumn?.id === id) {
+        void moveColumn(id, activeColumn.position)
+        setAnnouncement(`Dropped column ${column.title} at position ${activeColumn.position + 1}.`)
+        setActiveColumn(null)
+      } else {
+        setActive(null)
+        setActiveColumn({ id, position: state.columnOrder.indexOf(id) })
+        setAnnouncement(
+          `Picked up column ${column.title}. Use left and right arrows to move, Space to drop, Escape to cancel.`,
+        )
+      }
+      return
+    }
+    if (activeColumn?.id !== id) return
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      setActiveColumn(null)
+      setAnnouncement(`Cancelled moving column ${column.title}.`)
+      return
+    }
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+    event.preventDefault()
+    const position = Math.max(
+      0,
+      Math.min(
+        state.columnOrder.length - 1,
+        activeColumn.position + (event.key === 'ArrowLeft' ? -1 : 1),
+      ),
+    )
+    setActiveColumn({ id, position })
+    setAnnouncement(
+      `Moved column ${column.title} to position ${position + 1} of ${state.columnOrder.length}.`,
+    )
+  }
+
+  return { active, activeColumn, announcement, onCardKeyDown, onColumnKeyDown }
 }

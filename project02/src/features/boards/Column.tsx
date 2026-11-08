@@ -52,6 +52,7 @@ export function Column({ children, ...value }: Value & { children: ReactNode }) 
 
 function Header() {
   const { column, cards, onRename, onDelete } = useColumn()
+  const dnd = useDnd()
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(column.title)
   function save() {
@@ -66,6 +67,8 @@ function Header() {
         variant="ghost"
         data-column-drag-handle
         aria-label={`Drag ${column.title}`}
+        aria-grabbed={dnd?.activeColumnId === column.id}
+        onKeyDown={(event) => dnd?.onColumnKeyDown(event, column.id)}
         className="cursor-grab touch-none"
       >
         <GripVertical />

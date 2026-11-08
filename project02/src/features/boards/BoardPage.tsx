@@ -1,11 +1,10 @@
-import { useDeferredValue, useEffect, useState } from 'react'
-import { Link, Outlet, useParams, useSearchParams } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Link, Outlet, useParams } from 'react-router'
 import { createPortal } from 'react-dom'
 import { ArrowLeft } from 'lucide-react'
 import { api, ApiError } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { Priority } from '@/types/api'
 import { BoardFilters } from './BoardFilters'
 import { selectVisibleCards } from './boardReducer'
 import type { BoardState } from './boardReducer'
@@ -17,6 +16,7 @@ import { useCardHistory } from '@/features/history/useCardHistory'
 import { useKeyboardDrag } from '@/features/dnd/useKeyboardDrag'
 import { usePointerDrag } from '@/features/dnd/usePointerDrag'
 import { DndContext } from '@/features/dnd/DndContext'
+import { useBoardFilters } from './useBoardFilters'
 
 export interface BoardOutlet {
   state: BoardState
@@ -25,25 +25,16 @@ export interface BoardOutlet {
 
 export function BoardPage() {
   const { boardId } = useParams()
-  const [params, setParams] = useSearchParams()
   const { history, send, getState } = useBoardStore()
   const state = history.present
   const actions = useBoardMutations({ boardId: boardId ?? '', send, getState })
   const moves = useCardHistory({ send, getState })
-  const keyboard = useKeyboardDrag(state, moves.moveCard)
+  const keyboard = useKeyboardDrag(state, moves.moveCard, actions.moveColumn)
   const pointer = usePointerDrag(state, moves.moveCard, actions.moveColumn)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<{ id: string; cause: Error } | null>(null)
   const [version, setVersion] = useState(0)
-  const q = params.get('q') ?? ''
-  const deferredQ = useDeferredValue(q)
-  const selectedPriority = params.get('priority') ?? ''
-  const priority: Priority | '' =
-    selectedPriority === 'high' || selectedPriority === 'medium' || selectedPriority === 'low'
-      ? selectedPriority
-      : ''
-  const label = params.get('label') ?? ''
-  const labels = [...new Set(Object.values(state.cards).flatMap((card) => card.labels))].sort()
+  const { q, deferredQ, priority, label, labels, changeFilter } = useBoardFilters(state)
 
   useEffect(() => {
     if (!boardId) return
@@ -65,18 +56,6 @@ export function BoardPage() {
       })
     return () => controller.abort()
   }, [boardId, version, send])
-
-  function changeFilter(key: 'q' | 'priority' | 'label', value: string) {
-    setParams(
-      (previous) => {
-        const next = new URLSearchParams(previous)
-        if (value) next.set(key, value)
-        else next.delete(key)
-        return next
-      },
-      { replace: key === 'q' },
-    )
-  }
 
   if (error && error.id === boardId)
     return (
@@ -152,12 +131,14 @@ export function BoardPage() {
         <DndContext.Provider
           value={{
             activeId: keyboard.active?.id ?? pointer.drag?.id ?? null,
+            activeColumnId: keyboard.activeColumn?.id ?? null,
             target:
               keyboard.active?.target ??
               (pointer.drag?.kind === 'card'
                 ? (pointer.drag.target as { columnId: string; position: number })
                 : null),
             onCardKeyDown: keyboard.onCardKeyDown,
+            onColumnKeyDown: keyboard.onColumnKeyDown,
           }}
         >
           <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6">

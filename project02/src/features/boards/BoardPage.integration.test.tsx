@@ -130,6 +130,25 @@ describe('board interactions', () => {
     expect(screen.getByRole('searchbox', { name: /search/i })).toHaveValue('analytics')
   })
 
+  it('reorders a column with Space and arrow keys', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const handle = await screen.findByRole('button', { name: 'Drag To do' })
+    handle.focus()
+    await user.keyboard('[Space][ArrowRight][Space]')
+    await waitFor(() =>
+      expect(document.querySelector<HTMLElement>('[data-column-id]')?.dataset.columnId).toBe(
+        'col-doing',
+      ),
+    )
+    await waitFor(async () =>
+      expect(
+        (await api.getBoard('board-launch')).columns.find((column) => column.id === 'col-todo')
+          ?.position,
+      ).toBe(1),
+    )
+  })
+
   it('restores focus to the card after closing its route dialog', async () => {
     const user = userEvent.setup()
     render(<App />)

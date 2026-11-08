@@ -1,22 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
-export function useLocalStorage<T>(key: string, initialValue: T) {
-  const [value, setValue] = useState<T>(() => {
+export function useLocalStorage<T>(key: string, fallback: T) {
+  const read = useCallback((): T => {
     try {
       const saved = localStorage.getItem(key)
-      return saved === null ? initialValue : JSON.parse(saved) as T
+      return saved === null ? fallback : (JSON.parse(saved) as T)
     } catch {
-      return initialValue
+      return fallback
     }
-  })
+  }, [key, fallback])
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value))
-    } catch {
-      // The app remains usable when storage is disabled or full.
-    }
-  }, [key, value])
+  const write = useCallback(
+    (value: T) => {
+      try {
+        localStorage.setItem(key, JSON.stringify(value))
+      } catch {
+        // The app remains usable when storage is disabled or full.
+      }
+    },
+    [key],
+  )
 
-  return [value, setValue] as const
+  return { read, write }
 }

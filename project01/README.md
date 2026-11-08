@@ -39,7 +39,8 @@ app fetches all search matches and applies the category, sorting, and 12-item
 pages in the browser so these controls can be combined.
 
 The cart uses a pure reducer and Context. The cart and chosen theme use
-`localStorage`; without a stored theme, the system preference is used. Checkout
+`localStorage`; until a theme is chosen, the app follows changes to the system
+preference without saving it. Checkout
 is a simulation: no form values are sent to a server. Use fake test values only.
 
 `ProductCard` uses `memo`, and the catalog passes it a stable `useCallback`

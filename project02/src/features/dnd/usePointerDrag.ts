@@ -51,7 +51,10 @@ export function usePointerDrag(
           event.clientX > columnElement.getBoundingClientRect().left + columnElement.offsetWidth / 2
         const insertion = index + (after ? 1 : 0)
         const sourceIndex = current.columnOrder.indexOf(start.id)
-        target = Math.max(0, Math.min(current.columnOrder.length - 1, insertion - (sourceIndex < insertion ? 1 : 0)))
+        target = Math.max(
+          0,
+          Math.min(current.columnOrder.length - 1, insertion - (sourceIndex < insertion ? 1 : 0)),
+        )
       } else {
         const cardElement = element?.closest<HTMLElement>('[data-card-id]')
         const targetCard = cardElement?.dataset.cardId

@@ -6,6 +6,7 @@ interface BoardsValue {
   loading: boolean
   error: string | null
   reload: () => void
+  updateLocal: (updater: (boards: BoardSummary[]) => BoardSummary[]) => void
 }
 
 export const BoardsContext = createContext<BoardsValue | null>(null)

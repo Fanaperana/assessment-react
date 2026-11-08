@@ -10,8 +10,8 @@ import type { BoardOutlet } from '@/features/boards/BoardPage'
 
 export function CardDialog() {
   const { boardId, cardId } = useParams()
-  const { detail } = useOutletContext<BoardOutlet>()
-  const card = detail.cards.find((item) => item.id === cardId)
+  const { state } = useOutletContext<BoardOutlet>()
+  const card = cardId ? state.cards[cardId] : undefined
   const navigate = useNavigate()
   return (
     <Dialog open onOpenChange={() => navigate(`/boards/${boardId}`)}>

@@ -7,6 +7,7 @@ interface ColumnValue {
   column: ColumnType
   cards: Card[]
   boardId: string
+  query: string
 }
 const ColumnContext = createContext<ColumnValue | null>(null)
 
@@ -20,10 +21,11 @@ export function Column({
   column,
   cards,
   boardId,
+  query,
   children,
 }: ColumnValue & { children: ReactNode }) {
   return (
-    <ColumnContext.Provider value={{ column, cards, boardId }}>
+    <ColumnContext.Provider value={{ column, cards, boardId, query }}>
       <section
         className="flex h-fit max-h-[calc(100svh-180px)] w-[calc(100vw-2rem)] max-w-[360px] shrink-0 snap-center flex-col rounded-xl border bg-muted/45 shadow-sm sm:w-80"
         aria-label={`${column.title} column`}
@@ -47,7 +49,7 @@ function ColumnHeader() {
 }
 
 function ColumnCards() {
-  const { column, cards, boardId } = useColumn()
+  const { cards, boardId, query } = useColumn()
   return (
     <div className="space-y-3 overflow-y-auto p-3">
       {cards.length === 0 ? (
@@ -56,7 +58,7 @@ function ColumnCards() {
         </div>
       ) : (
         cards.map((card) => (
-          <CardPreview key={card.id} card={card} boardId={boardId} columnId={column.id} />
+          <CardPreview key={card.id} card={card} boardId={boardId} query={query} />
         ))
       )}
     </div>

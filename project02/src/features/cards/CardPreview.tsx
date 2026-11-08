@@ -6,7 +6,15 @@ import type { Card } from '@/types/api'
 
 const today = new Date().toISOString().slice(0, 10)
 
-export function CardPreview({ card, boardId }: { card: Card; boardId: string; columnId: string }) {
+export function CardPreview({
+  card,
+  boardId,
+  query,
+}: {
+  card: Card
+  boardId: string
+  query: string
+}) {
   const overdue = card.dueDate !== null && card.dueDate < today
   const priorityClass =
     card.priority === 'high'
@@ -25,7 +33,7 @@ export function CardPreview({ card, boardId }: { card: Card; boardId: string; co
           to={`/boards/${boardId}/cards/${card.id}`}
           className="block rounded-sm leading-snug font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring"
         >
-          {card.title}
+          <HighlightedTitle title={card.title} query={query} />
         </Link>
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline" className={priorityClass}>
@@ -55,5 +63,20 @@ export function CardPreview({ card, boardId }: { card: Card; boardId: string; co
         )}
       </CardContent>
     </Surface>
+  )
+}
+
+function HighlightedTitle({ title, query }: { title: string; query: string }) {
+  const needle = query.trim()
+  const index = needle ? title.toLocaleLowerCase().indexOf(needle.toLocaleLowerCase()) : -1
+  if (index < 0) return title
+  return (
+    <>
+      {title.slice(0, index)}
+      <mark className="rounded-sm bg-yellow-200 text-yellow-950 dark:bg-yellow-700 dark:text-white">
+        {title.slice(index, index + needle.length)}
+      </mark>
+      {title.slice(index + needle.length)}
+    </>
   )
 }

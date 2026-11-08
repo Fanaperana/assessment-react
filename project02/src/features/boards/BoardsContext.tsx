@@ -10,6 +10,10 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [version, setVersion] = useState(0)
   const reload = useCallback(() => setVersion((value) => value + 1), [])
+  const updateLocal = useCallback(
+    (updater: (boards: BoardSummary[]) => BoardSummary[]) => setBoards(updater),
+    [],
+  )
 
   useEffect(() => {
     const controller = new AbortController()
@@ -29,7 +33,7 @@ export function BoardsProvider({ children }: { children: ReactNode }) {
   }, [version])
 
   return (
-    <BoardsContext.Provider value={{ boards, loading, error, reload }}>
+    <BoardsContext.Provider value={{ boards, loading, error, reload, updateLocal }}>
       {children}
     </BoardsContext.Provider>
   )

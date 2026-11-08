@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router'
-import { useCart } from '../context/CartContext'
-import { useTheme } from '../context/ThemeContext'
+import { useCart } from '../hooks/useCart'
+import { useTheme } from '../hooks/useTheme'
 import { Button } from './Button'
 
 export function Layout() {

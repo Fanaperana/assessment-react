@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/docs/lighthouse-profile.report.*
 
 # next.js
 /.next/

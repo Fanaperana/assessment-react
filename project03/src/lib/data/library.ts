@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -51,7 +52,7 @@ export async function getEntryForBook(userId: string, bookId: string) {
   return rows[0] ?? null;
 }
 
-export async function getDashboard(userId: string) {
+export const getDashboard = cache(async (userId: string) => {
   const year = new Date().getFullYear();
   const [entries, logs, goal] = await Promise.all([
     db.select().from(shelfEntries).where(eq(shelfEntries.userId, userId)),
@@ -62,7 +63,7 @@ export async function getDashboard(userId: string) {
       .where(and(eq(readingGoals.userId, userId), eq(readingGoals.year, year))),
   ]);
   return calculateStats(entries, logs, goal[0]?.targetBooks ?? 12);
-}
+});
 
 export async function getPublicProfile(username: string) {
   if (!usernameSchema.safeParse(username).success) return null;

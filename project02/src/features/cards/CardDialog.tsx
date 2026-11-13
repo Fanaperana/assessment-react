@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router'
 import {
   Dialog,
@@ -15,13 +14,8 @@ export function CardDialog() {
   const { state, actions } = useOutletContext<BoardOutlet>()
   const card = cardId ? state.cards[cardId] : undefined
   const navigate = useNavigate()
-  const opener = useRef<HTMLElement | null>(null)
-  useEffect(() => {
-    opener.current = document.querySelector(`[data-card-id="${CSS.escape(cardId ?? '')}"] a`)
-  }, [cardId])
   function close() {
     navigate(`/boards/${boardId}`)
-    queueMicrotask(() => (opener.current ?? document.getElementById('board-title'))?.focus())
   }
   return (
     <Dialog

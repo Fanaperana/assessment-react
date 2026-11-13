@@ -1,0 +1,20 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('tickets', function (Blueprint $table) {
+            $table->timestamp('sla_breached_at')->nullable()->index()->after('sla_due_at');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('tickets', fn (Blueprint $table) => $table->dropColumn('sla_breached_at'));
+    }
+};

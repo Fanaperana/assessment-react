@@ -15,7 +15,7 @@ export interface LibraryBook {
   pageCount: number | null;
 }
 
-const origin = "https://openlibrary.org";
+const origin = process.env.OPEN_LIBRARY_ORIGIN ?? "https://openlibrary.org";
 
 async function json(response: Response): Promise<unknown> {
   if (!response.ok)
@@ -75,4 +75,26 @@ export async function getOpenLibraryBook(
         : (work.description?.value ?? null),
     pageCount: null,
   };
+}
+
+export async function getCoverDataUrl(coverId: number): Promise<string | null> {
+  if (!Number.isInteger(coverId) || coverId < 1) return null;
+  try {
+    const response = await fetch(
+      `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`,
+      {
+        next: { revalidate: 86400 },
+        signal: AbortSignal.timeout(4000),
+      },
+    );
+    if (
+      !response.ok ||
+      !response.headers.get("content-type")?.startsWith("image/")
+    )
+      return null;
+    const bytes = Buffer.from(await response.arrayBuffer());
+    return `data:image/jpeg;base64,${bytes.toString("base64")}`;
+  } catch {
+    return null;
+  }
 }

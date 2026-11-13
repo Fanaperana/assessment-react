@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getPublicProfile } from "@/lib/data/library";
 import { LoadingState } from "@/components/route-states";
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function Profile({ params }: Props) {
+  await connection();
   const { username } = await params;
   const profile = await getPublicProfile(username);
   if (!profile) notFound();
@@ -67,10 +69,11 @@ async function Profile({ params }: Props) {
                 <div className="flex gap-4">
                   {book.coverId ? (
                     <Image
-                      src={`https://covers.openlibrary.org/b/id/${book.coverId}-M.jpg`}
+                      src={`/api/covers/${book.coverId}`}
                       alt={`Cover of ${book.title}`}
                       width={80}
                       height={120}
+                      unoptimized
                       className="h-30 w-20 rounded object-cover"
                     />
                   ) : (

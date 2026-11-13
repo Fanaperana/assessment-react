@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
+import { connection } from "next/server";
 import { getPublicProfile } from "@/lib/data/library";
+import { getCoverDataUrl } from "@/lib/data/open-library";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -9,6 +11,7 @@ export default async function Image({
 }: {
   params: Promise<{ username: string }>;
 }) {
+  await connection();
   const { username } = await params;
   const profile = await getPublicProfile(username);
   const name = profile?.user.name ?? "Bookshelf reader";
@@ -16,7 +19,15 @@ export default async function Image({
   const thisYear = books.filter(
     ({ entry }) => entry.finishedAt?.getFullYear() === new Date().getFullYear(),
   ).length;
-  const covers = books.filter(({ book }) => book.coverId).slice(0, 3);
+  const covers = await Promise.all(
+    books
+      .filter(({ book }) => book.coverId)
+      .slice(0, 3)
+      .map(async ({ book }) => ({
+        book,
+        src: await getCoverDataUrl(book.coverId!),
+      })),
+  );
   return new ImageResponse(
     <div
       style={{
@@ -42,21 +53,41 @@ export default async function Image({
           BOOKSHELF · READER PROFILE
         </div>
         <div style={{ fontSize: 72, fontWeight: 700 }}>{name}</div>
-        <div style={{ fontSize: 34 }}>{thisYear} books read this year</div>
+        <div style={{ fontSize: 34 }}>{`${thisYear} books read this year`}</div>
       </div>
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-        {covers.map(({ book }) => (
-          // ImageResponse renders standard image elements; next/image is unavailable here.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={book.id}
-            src={`https://covers.openlibrary.org/b/id/${book.coverId}-M.jpg`}
-            alt=""
-            width={130}
-            height={195}
-            style={{ objectFit: "cover", borderRadius: 10 }}
-          />
-        ))}
+        {covers.map(({ book, src }) =>
+          src ? (
+            // ImageResponse renders standard image elements; next/image is unavailable here.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={book.id}
+              src={src}
+              alt=""
+              width={130}
+              height={195}
+              style={{ objectFit: "cover", borderRadius: 10 }}
+            />
+          ) : (
+            <div
+              key={book.id}
+              style={{
+                display: "flex",
+                width: 130,
+                height: 195,
+                borderRadius: 10,
+                background: "#f7e7bb",
+                color: "#142038",
+                padding: 15,
+                fontSize: 22,
+                fontWeight: 700,
+                alignItems: "center",
+              }}
+            >
+              {book.title}
+            </div>
+          ),
+        )}
       </div>
     </div>,
     size,

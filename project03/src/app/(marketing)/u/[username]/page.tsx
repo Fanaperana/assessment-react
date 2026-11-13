@@ -9,6 +9,9 @@ import { LoadingState } from "@/components/route-states";
 
 type Props = { params: Promise<{ username: string }> };
 
+// The profile is request-time database content, so it cannot be a reusable shell.
+export const instant = false;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   const profile = await getPublicProfile(username);

@@ -11,6 +11,10 @@ import { shelfSchema } from "@/lib/validation/library";
 
 const labels = { want: "Want to read", reading: "Reading", read: "Read" };
 
+// This route depends on the request session and a user-specific SQLite query.
+// Keep it streaming, but opt out of Next's instant-navigation shell check.
+export const instant = false;
+
 export async function generateMetadata({
   params,
 }: {

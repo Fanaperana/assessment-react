@@ -12,7 +12,10 @@ export function productListUrl({ query, category, sort, page }: ProductQuery): s
   if (query) return `${PRODUCTS_API}/search?q=${encodeURIComponent(query)}&limit=0`
   if (category) return `${PRODUCTS_API}/category/${encodeURIComponent(category)}?limit=0`
 
-  const params = new URLSearchParams({ limit: String(PAGE_SIZE), skip: String((page - 1) * PAGE_SIZE) })
+  const params = new URLSearchParams({
+    limit: String(PAGE_SIZE),
+    skip: String((page - 1) * PAGE_SIZE),
+  })
   if (sort === 'price-asc' || sort === 'price-desc') {
     params.set('sortBy', 'price')
     params.set('order', sort === 'price-asc' ? 'asc' : 'desc')

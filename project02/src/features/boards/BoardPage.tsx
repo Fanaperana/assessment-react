@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, Outlet, useParams } from 'react-router'
 import { createPortal } from 'react-dom'
 import { ArrowLeft } from 'lucide-react'
@@ -24,17 +24,34 @@ export interface BoardOutlet {
 }
 
 export function BoardPage() {
-  const { boardId } = useParams()
+  const { boardId, cardId } = useParams()
   const { history, send, getState } = useBoardStore()
   const state = history.present
   const actions = useBoardMutations({ boardId: boardId ?? '', send, getState })
   const moves = useCardHistory({ send, getState })
   const keyboard = useKeyboardDrag(state, moves.moveCard, actions.moveColumn)
   const pointer = usePointerDrag(state, moves.moveCard, actions.moveColumn)
+  const lastCardId = useRef(cardId)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<{ id: string; cause: Error } | null>(null)
   const [version, setVersion] = useState(0)
   const { q, deferredQ, priority, label, labels, changeFilter } = useBoardFilters(state)
+
+  useEffect(() => {
+    if (lastCardId.current && !cardId) {
+      const selector = `[data-card-id="${CSS.escape(lastCardId.current)}"] a`
+      const opener = document.querySelector<HTMLElement>(selector)
+      const focusTarget = opener ?? document.getElementById('board-title')
+      focusTarget?.focus()
+    }
+    lastCardId.current = cardId
+  }, [cardId])
+
+  useLayoutEffect(() => {
+    if (!keyboard.focusRequest) return
+    const selector = `[data-card-id="${CSS.escape(keyboard.focusRequest.id)}"] a`
+    document.querySelector<HTMLElement>(selector)?.focus()
+  }, [keyboard.focusRequest])
 
   useEffect(() => {
     if (!boardId) return
@@ -122,6 +139,9 @@ export function BoardPage() {
       />
       <div aria-live="assertive" className="sr-only">
         {keyboard.announcement}
+      </div>
+      <div aria-live="polite" className="sr-only">
+        {moves.announcement}
       </div>
       {state.columnOrder.length === 0 ? (
         <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">

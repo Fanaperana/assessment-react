@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { api } from '@/api/client'
 import { useAbortable } from '@/hooks/useAbortable'
@@ -13,6 +13,7 @@ export function useCardHistory({ send, getState }: Store) {
   const run = useAbortable()
   const queues = useRef(new Map<string, Promise<void>>())
   const confirmed = useRef(new Map<string, Location>())
+  const [announcement, setAnnouncement] = useState('')
 
   function enqueue(id: string, task: () => Promise<void>) {
     const previous = queues.current.get(id) ?? Promise.resolve()
@@ -46,6 +47,11 @@ export function useCardHistory({ send, getState }: Store) {
           id: operation.id,
           rollback: latest ? { type: 'MOVE_CARD', id, ...fallback } : undefined,
         })
+        setAnnouncement(
+          latest
+            ? `Move failed. ${card.title} returned to ${getState().present.columns[fallback.columnId]?.title ?? 'its previous column'}.`
+            : `The earlier move of ${card.title} failed. Its latest position was kept.`,
+        )
         toast.error('Could not move card', {
           description: reason instanceof Error ? reason.message : undefined,
           action: { label: 'Retry', onClick: () => moveCard(id, to) },
@@ -131,5 +137,5 @@ export function useCardHistory({ send, getState }: Store) {
       window.removeEventListener('flowboard:undo', onToastUndo)
     }
   }, [])
-  return { moveCard, undo, redo }
+  return { moveCard, undo, redo, announcement }
 }

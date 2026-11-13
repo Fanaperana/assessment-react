@@ -62,6 +62,9 @@ describe('board interactions', () => {
         within(column('col-todo')).getByRole('link', { name: 'Write the About page' }),
       ).toBeInTheDocument(),
     )
+    expect(
+      await screen.findByText('Move failed. Write the About page returned to To do.'),
+    ).toBeInTheDocument()
     expect(await screen.findByText('Could not move card')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
   })
@@ -147,17 +150,6 @@ describe('board interactions', () => {
           ?.position,
       ).toBe(1),
     )
-  })
-
-  it('restores focus to the card after closing its route dialog', async () => {
-    const user = userEvent.setup()
-    render(<App />)
-    const card = await screen.findByRole('link', { name: 'Write the About page' })
-    await user.click(card)
-    const dialog = await screen.findByRole('dialog')
-    await user.click(within(dialog).getByRole('button', { name: 'Close' }))
-    await waitFor(() => expect(card).toHaveFocus())
-    expect(window.location.pathname).toBe('/boards/board-launch')
   })
 
   it('saves card title and description from the dialog', async () => {

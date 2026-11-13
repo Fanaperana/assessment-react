@@ -16,6 +16,7 @@ export function useKeyboardDrag(
   const [active, setActive] = useState<Active | null>(null)
   const [activeColumn, setActiveColumn] = useState<{ id: string; position: number } | null>(null)
   const [announcement, setAnnouncement] = useState('')
+  const [focusRequest, setFocusRequest] = useState<{ id: string } | null>(null)
 
   function onCardKeyDown(event: KeyboardEvent<HTMLElement>, id: string) {
     const card = state.cards[id]
@@ -24,6 +25,7 @@ export function useKeyboardDrag(
       event.preventDefault()
       if (active?.id === id) {
         moveCard(id, active.target)
+        setFocusRequest({ id })
         setAnnouncement(`Dropped ${card.title}.`)
         setActive(null)
       } else {
@@ -104,5 +106,5 @@ export function useKeyboardDrag(
     )
   }
 
-  return { active, activeColumn, announcement, onCardKeyDown, onColumnKeyDown }
+  return { active, activeColumn, announcement, focusRequest, onCardKeyDown, onColumnKeyDown }
 }

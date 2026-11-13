@@ -2,6 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { Ticket } from '@/types/tickets';
 import { Head, Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { startTransition, useOptimistic } from 'react';
 
 type Props = {
     ticket: Ticket;
@@ -11,6 +12,7 @@ type Props = {
 export default function TicketShow({ ticket, agents, can }: Props) {
     const reply = useForm<{ body: string; internal: boolean; attachments: File[] }>({ body: '', internal: false, attachments: [] });
     const update = useForm({ status: ticket.status, priority: ticket.priority });
+    const [optimisticStatus, setOptimisticStatus] = useOptimistic(ticket.status);
     const assign = useForm({ assignee_id: ticket.assignee?.id?.toString() ?? '' });
     const submitReply = (e: FormEvent) => {
         e.preventDefault();
@@ -104,10 +106,14 @@ export default function TicketShow({ ticket, agents, can }: Props) {
                             Status
                             <select
                                 disabled={!can.update}
-                                value={update.data.status}
+                                value={optimisticStatus}
                                 onChange={(e) => {
-                                    update.setData('status', e.target.value as typeof ticket.status);
-                                    update.patch(`/tickets/${ticket.id}`);
+                                    const status = e.target.value as typeof ticket.status;
+                                    update.setData('status', status);
+                                    startTransition(() => {
+                                        setOptimisticStatus(status);
+                                        update.patch(`/tickets/${ticket.id}`);
+                                    });
                                 }}
                                 className="bg-background mt-1 w-full rounded-md border px-3 py-2"
                             >

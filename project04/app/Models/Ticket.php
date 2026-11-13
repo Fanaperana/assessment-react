@@ -17,7 +17,7 @@ class Ticket extends Model
 
     protected $fillable = [
         'created_by_id', 'assignee_id', 'category_id', 'subject', 'description',
-        'status', 'priority', 'sla_due_at', 'closed_at',
+        'status', 'priority', 'sla_due_at', 'sla_breached_at', 'closed_at',
     ];
 
     protected function casts(): array
@@ -26,6 +26,7 @@ class Ticket extends Model
             'status' => TicketStatus::class,
             'priority' => TicketPriority::class,
             'sla_due_at' => 'datetime',
+            'sla_breached_at' => 'datetime',
             'closed_at' => 'datetime',
         ];
     }

@@ -14,8 +14,8 @@ class CheckTicketSla extends Command
     public function handle(): int
     {
         $count = 0;
-        Ticket::query()->whereIn('status', [TicketStatus::Open, TicketStatus::Pending])->whereNotNull('sla_due_at')->where('sla_due_at', '<', now())->with('activities')->each(function (Ticket $ticket) use (&$count): void {
-            if ($ticket->activities->contains('type', 'sla_breached')) return;
+        Ticket::query()->whereIn('status', [TicketStatus::Open, TicketStatus::Pending])->whereNull('sla_breached_at')->whereNotNull('sla_due_at')->where('sla_due_at', '<', now())->each(function (Ticket $ticket) use (&$count): void {
+            $ticket->update(['sla_breached_at' => now()]);
             $ticket->activities()->create(['type' => 'sla_breached', 'description' => 'SLA target breached.']);
             $count++;
         });

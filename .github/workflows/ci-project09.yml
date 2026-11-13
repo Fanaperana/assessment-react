@@ -1,0 +1,27 @@
+name: project09
+
+on:
+  pull_request:
+    paths: ['project09/**', '.github/workflows/ci-project09.yml']
+  push:
+    branches: [main]
+    paths: ['project09/**', '.github/workflows/ci-project09.yml']
+
+jobs:
+  check:
+    name: project09 — Expo typecheck, lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project09
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project09/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test --if-present

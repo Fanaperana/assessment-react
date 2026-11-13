@@ -1,30 +1,14 @@
-name: CI
+name: project02
 
 on:
   pull_request:
+    paths: ['project02/**', '.github/workflows/ci-project02.yml']
   push:
     branches: [main]
+    paths: ['project02/**', '.github/workflows/ci-project02.yml']
 
 jobs:
-  project01:
-    name: project01 — lint, test, build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: project01
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: project01/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
-
-  project02:
+  check:
     name: project02 — format, lint, test, build, e2e
     runs-on: ubuntu-latest
     defaults:
@@ -34,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: project02/package-lock.json
       - run: npm ci
@@ -42,14 +26,12 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      # The Playwright test (I6) runs only after the student adds a "test:e2e" script.
+      # Playwright runs only when the project has a "test:e2e" script.
       - name: Check for e2e tests
         id: e2e
         run: |
           if node -e "process.exit(require('./package.json').scripts['test:e2e'] ? 0 : 1)"; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No test:e2e script yet. Skipping Playwright."
           fi
       - if: steps.e2e.outputs.enabled == 'true'
         run: npx playwright install --with-deps chromium

@@ -1,0 +1,26 @@
+name: project07
+
+on:
+  pull_request:
+    paths: ['project07/**', '.github/workflows/ci-project07.yml']
+  push:
+    branches: [main]
+    paths: ['project07/**', '.github/workflows/ci-project07.yml']
+
+jobs:
+  check:
+    name: project07 — Nuxt build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project07
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project07/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test --if-present

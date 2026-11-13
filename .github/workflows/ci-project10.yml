@@ -1,0 +1,28 @@
+name: project10
+
+on:
+  pull_request:
+    paths: ['project10/**', '.github/workflows/ci-project10.yml']
+  push:
+    branches: [main]
+    paths: ['project10/**', '.github/workflows/ci-project10.yml']
+
+jobs:
+  check:
+    name: project10 — NestJS lint, build, test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project10/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      - run: npm run test:e2e

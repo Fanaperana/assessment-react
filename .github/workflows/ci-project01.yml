@@ -1,0 +1,28 @@
+name: project01
+
+on:
+  pull_request:
+    paths: ['project01/**', '.github/workflows/ci-project01.yml']
+  push:
+    branches: [main]
+    paths: ['project01/**', '.github/workflows/ci-project01.yml']
+
+jobs:
+  check:
+    name: project01 — format, lint, test, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project01
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project01/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build

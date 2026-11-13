@@ -1,0 +1,42 @@
+name: project05
+
+on:
+  pull_request:
+    paths: ['project05/**', '.github/workflows/ci-project05.yml']
+  push:
+    branches: [main]
+    paths: ['project05/**', '.github/workflows/ci-project05.yml']
+
+jobs:
+  check:
+    name: project05 — Tauri frontend build, Rust fmt, clippy, test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project05
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev libxdo-dev
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: project05/src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project05/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test --if-present
+      - working-directory: project05/src-tauri
+        run: cargo fmt --check
+      - working-directory: project05/src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+      - working-directory: project05/src-tauri
+        run: cargo test

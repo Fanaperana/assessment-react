@@ -1,0 +1,27 @@
+name: project08
+
+on:
+  pull_request:
+    paths: ['project08/**', '.github/workflows/ci-project08.yml']
+  push:
+    branches: [main]
+    paths: ['project08/**', '.github/workflows/ci-project08.yml']
+
+jobs:
+  check:
+    name: project08 — SvelteKit check, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project08
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project08/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: npm test --if-present

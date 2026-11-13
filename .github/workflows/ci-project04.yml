@@ -1,0 +1,38 @@
+name: project04
+
+on:
+  pull_request:
+    paths: ['project04/**', '.github/workflows/ci-project04.yml']
+  push:
+    branches: [main]
+    paths: ['project04/**', '.github/workflows/ci-project04.yml']
+
+jobs:
+  check:
+    name: project04 — Laravel tests, Pint, types, lint, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, fileinfo
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project04/package-lock.json
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - run: touch database/database.sqlite
+      - run: npm ci
+      - run: npm run types
+      - run: npm run lint:check
+      - run: npm run format:check
+      - run: npm run build
+      - run: vendor/bin/pint --test
+      - run: composer test

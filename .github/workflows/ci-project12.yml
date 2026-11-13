@@ -1,0 +1,39 @@
+name: project12
+
+on:
+  pull_request:
+    paths: ['project12/**', '.github/workflows/ci-project12.yml']
+  push:
+    branches: [main]
+    paths: ['project12/**', '.github/workflows/ci-project12.yml']
+
+jobs:
+  check:
+    name: project12 — Go vet, race tests; React lint, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: project12/server/go.mod
+          cache-dependency-path: project12/server/go.sum
+      - name: gofmt
+        working-directory: project12/server
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - working-directory: project12/server
+        run: go vet ./...
+      - working-directory: project12/server
+        run: go test -race ./...
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: project12/web/package-lock.json
+      - working-directory: project12/web
+        run: npm ci
+      - working-directory: project12/web
+        run: npm run lint
+      - working-directory: project12/web
+        run: npm run build
+      - working-directory: project12/web
+        run: npm test --if-present

@@ -50,6 +50,16 @@ it('uses the close policy through a dedicated form request', function () {
     expect($ticket->fresh()->status)->toBe(TicketStatus::Closed);
 });
 
+it('records who changed ticket status and the old and new values', function () {
+    $agent = User::factory()->agent()->create(['name' => 'Sam Agent']);
+    $ticket = Ticket::factory()->create(['status' => TicketStatus::Open]);
+
+    $this->actingAs($agent)->patch("/tickets/{$ticket->id}", ['status' => 'pending'])->assertRedirect();
+
+    expect($ticket->activities()->latest()->value('description'))
+        ->toBe('Agent Sam Agent changed status from open to pending.');
+});
+
 it('reports dashboard counts for an agent assigned to them', function () {
     $agent = User::factory()->agent()->create();
     Ticket::factory()->create(['assignee_id' => $agent->id, 'status' => TicketStatus::Open]);

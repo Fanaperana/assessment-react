@@ -5,6 +5,7 @@ use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
 use App\Models\Ticket;
 use App\Models\User;
+use Carbon\Carbon;
 
 it('has the expected role values', function () {
     expect(Role::cases())->toHaveCount(3);
@@ -28,10 +29,12 @@ it('recognizes admins', function () {
     expect(User::factory()->admin()->make()->isAdmin())->toBeTrue();
 });
 it('calculates urgent SLA in four hours', function () {
-    expect(now()->diffInHours(now()->addHours(4)))->toBe(4);
+    $start = Carbon::parse('2026-01-01 00:00:00');
+    expect($start->diffInHours($start->copy()->addHours(4)))->toBe(4.0);
 });
 it('calculates normal SLA in seventy two hours', function () {
-    expect(now()->diffInHours(now()->addHours(72)))->toBe(72);
+    $start = Carbon::parse('2026-01-01 00:00:00');
+    expect($start->diffInHours($start->copy()->addHours(72)))->toBe(72.0);
 });
 it('uses the open scope for pending tickets', function () {
     $query = Ticket::query()->open()->toSql();

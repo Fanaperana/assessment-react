@@ -20,7 +20,7 @@ class TicketService
     public function create(User $user, array $data, array $files = []): Ticket
     {
         $ticket = Ticket::create([...$data, 'created_by_id' => $user->id, 'sla_due_at' => $this->slaDue($data['priority'] ?? TicketPriority::Normal->value)]);
-        $this->activity->record($ticket, $user, 'created', 'Ticket was created.');
+        $this->activity->record($ticket, $user, 'created', "{$user->name} created the ticket.");
         $this->storeAttachments($ticket, $user, $files);
         Notification::send(User::whereIn('role', ['agent', 'admin'])->get(), new TicketCreatedNotification($ticket));
 
@@ -40,9 +40,11 @@ class TicketService
 
     public function assign(User $user, Ticket $ticket, ?int $assigneeId): void
     {
+        $previousAssignee = User::find($ticket->assignee_id)?->name ?? 'unassigned';
         $assignee = $assigneeId ? User::findOrFail($assigneeId) : null;
         $ticket->update(['assignee_id' => $assignee?->id]);
-        $this->activity->record($ticket, $user, 'assigned', 'Ticket assignment changed.');
+        $actor = ucfirst($user->role->value).' '.$user->name;
+        $this->activity->record($ticket, $user, 'assigned', "{$actor} assigned the ticket from {$previousAssignee} to ".($assignee?->name ?? 'unassigned').'.');
         if ($assignee) {
             $assignee->notify(new TicketAssignedNotification($ticket));
         }
@@ -50,9 +52,26 @@ class TicketService
 
     public function update(User $user, Ticket $ticket, array $data): void
     {
-        $before = $ticket->status->value;
+        $changes = [];
+        foreach (['status', 'priority', 'category_id'] as $field) {
+            if (! array_key_exists($field, $data)) {
+                continue;
+            }
+
+            $before = $ticket->getAttribute($field);
+            $before = $before instanceof \BackedEnum ? $before->value : $before;
+            $after = $data[$field] instanceof \BackedEnum ? $data[$field]->value : $data[$field];
+            if ((string) $before !== (string) $after) {
+                $changes[$field] = [$before, $after];
+            }
+        }
+
         $ticket->update($data + ['closed_at' => (($data['status'] ?? null) === TicketStatus::Closed->value) ? now() : $ticket->closed_at]);
-        $this->activity->record($ticket, $user, 'updated', "Ticket changed from {$before}.");
+        $actor = ucfirst($user->role->value).' '.$user->name;
+        foreach ($changes as $field => [$before, $after]) {
+            $label = $field === 'category_id' ? 'category' : $field;
+            $this->activity->record($ticket, $user, 'updated', "{$actor} changed {$label} from {$before} to {$after}.");
+        }
     }
 
     private function storeAttachments($attachable, User $user, array $files): void

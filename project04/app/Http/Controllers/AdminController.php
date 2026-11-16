@@ -15,9 +15,25 @@ use Inertia\Response;
 
 class AdminController extends Controller
 {
-    public function index(): Response { return Inertia::render('admin/index', ['users' => User::orderBy('name')->paginate(20), 'categories' => Category::orderBy('name')->get()]); }
-    public function updateUser(UpdateUserRoleRequest $request, User $user): RedirectResponse { $user->update($request->validated()); return back()->with('success', 'User role updated.'); }
-    public function storeCategory(StoreCategoryRequest $request): RedirectResponse { $data = $request->validated(); Category::create(['name' => $data['name'], 'slug' => str($data['name'])->slug()]); return back()->with('success', 'Category created.'); }
+    public function index(): Response
+    {
+        return Inertia::render('admin/index', ['users' => User::orderBy('name')->paginate(20), 'categories' => Category::orderBy('name')->get()]);
+    }
+
+    public function updateUser(UpdateUserRoleRequest $request, User $user): RedirectResponse
+    {
+        $user->update($request->validated());
+
+        return back()->with('success', 'User role updated.');
+    }
+
+    public function storeCategory(StoreCategoryRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+        Category::create(['name' => $data['name'], 'slug' => str($data['name'])->slug()]);
+
+        return back()->with('success', 'Category created.');
+    }
 
     public function reports(): Response
     {

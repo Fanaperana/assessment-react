@@ -20,5 +20,8 @@ return new class extends Migration
         });
     }
 
-    public function down(): void { Schema::dropIfExists('personal_access_tokens'); }
+    public function down(): void
+    {
+        Schema::dropIfExists('personal_access_tokens');
+    }
 };

@@ -12,6 +12,14 @@ class Attachment extends Model
     use HasFactory;
 
     protected $fillable = ['uploaded_by_id', 'disk', 'path', 'original_name', 'mime_type', 'size'];
-    public function attachable(): MorphTo { return $this->morphTo(); }
-    public function uploader(): BelongsTo { return $this->belongsTo(User::class, 'uploaded_by_id'); }
+
+    public function attachable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by_id');
+    }
 }

@@ -31,12 +31,35 @@ class Ticket extends Model
         ];
     }
 
-    public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by_id'); }
-    public function assignee(): BelongsTo { return $this->belongsTo(User::class, 'assignee_id'); }
-    public function category(): BelongsTo { return $this->belongsTo(Category::class); }
-    public function replies(): HasMany { return $this->hasMany(TicketReply::class); }
-    public function activities(): HasMany { return $this->hasMany(TicketActivity::class); }
-    public function attachments(): MorphMany { return $this->morphMany(Attachment::class, 'attachable'); }
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(TicketReply::class);
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(TicketActivity::class);
+    }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
 
     public function scopeOpen(Builder $query): void
     {
@@ -50,14 +73,18 @@ class Ticket extends Model
 
     public function scopeVisibleTo(Builder $query, User $user): void
     {
-        if ($user->isAgent()) return;
+        if ($user->isAgent()) {
+            return;
+        }
         $query->where('created_by_id', $user->id);
     }
 
     public function scopeSearch(Builder $query, ?string $term): void
     {
         $term = trim((string) $term);
-        if ($term === '') return;
+        if ($term === '') {
+            return;
+        }
         $query->where(fn (Builder $q) => $q
             ->where('subject', 'like', "%{$term}%")
             ->orWhere('description', 'like', "%{$term}%"));

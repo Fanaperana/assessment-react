@@ -35,8 +35,15 @@ class UserFactory extends Factory
         ];
     }
 
-    public function admin(): static { return $this->state(['role' => Role::Admin]); }
-    public function agent(): static { return $this->state(['role' => Role::Agent]); }
+    public function admin(): static
+    {
+        return $this->state(['role' => Role::Admin]);
+    }
+
+    public function agent(): static
+    {
+        return $this->state(['role' => Role::Agent]);
+    }
 
     /**
      * Indicate that the model's email address should be unverified.

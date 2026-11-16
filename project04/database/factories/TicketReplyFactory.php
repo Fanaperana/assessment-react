@@ -22,5 +22,8 @@ class TicketReplyFactory extends Factory
         ];
     }
 
-    public function internal(): static { return $this->state(['is_internal' => true]); }
+    public function internal(): static
+    {
+        return $this->state(['is_internal' => true]);
+    }
 }

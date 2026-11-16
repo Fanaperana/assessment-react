@@ -14,6 +14,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $base = Ticket::query()->whereIn('status', [TicketStatus::Open, TicketStatus::Pending]);
+
         return Inertia::render('dashboard', [
             'stats' => [
                 'open' => $user->isAgent()

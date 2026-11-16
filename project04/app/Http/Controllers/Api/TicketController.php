@@ -19,6 +19,7 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         $tickets = Ticket::query()->with(['creator:id,name', 'assignee:id,name', 'category:id,name'])->visibleTo($request->user())->search($request->string('search')->toString())->latest()->paginate(20);
+
         return TicketResource::collection($tickets);
     }
 
@@ -26,12 +27,14 @@ class TicketController extends Controller
     {
         abort_unless($request->user()->isAgent() || $ticket->created_by_id === $request->user()->id, 404);
         $this->authorize('view', $ticket);
+
         return new TicketResource($ticket->load(['creator:id,name', 'assignee:id,name', 'category:id,name', 'replies.user:id,name', 'activities']));
     }
 
     public function store(StoreTicketRequest $request): TicketResource
     {
         $ticket = $this->service->create($request->user(), $request->safe()->except('attachments'), $request->file('attachments', []));
+
         return new TicketResource($ticket->load(['creator', 'category']));
     }
 
@@ -41,6 +44,7 @@ class TicketController extends Controller
         $data = $request->validated();
         abort_if($data['internal'] ?? false, 403, 'Internal notes are not available through this endpoint.');
         $this->service->reply($request->user(), $ticket, $data['body'], false, $request->file('attachments', []));
+
         return response()->json(new TicketReplyResource($ticket->replies()->latest()->first()), 201);
     }
 }

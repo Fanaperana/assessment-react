@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class CheckTicketSla extends Command
 {
     protected $signature = 'tickets:check-sla';
+
     protected $description = 'Mark overdue open tickets as breached in the activity log';
 
     public function handle(): int
@@ -20,6 +21,7 @@ class CheckTicketSla extends Command
             $count++;
         });
         $this->info("Recorded {$count} SLA breaches.");
+
         return self::SUCCESS;
     }
 }

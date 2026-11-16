@@ -11,7 +11,19 @@ class TicketActivity extends Model
     use HasFactory;
 
     protected $fillable = ['ticket_id', 'user_id', 'type', 'description', 'metadata'];
-    protected function casts(): array { return ['metadata' => 'array']; }
-    public function ticket(): BelongsTo { return $this->belongsTo(Ticket::class); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+
+    protected function casts(): array
+    {
+        return ['metadata' => 'array'];
+    }
+
+    public function ticket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

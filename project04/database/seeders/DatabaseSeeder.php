@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Role;
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
 use App\Models\Category;

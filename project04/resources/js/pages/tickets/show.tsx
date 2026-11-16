@@ -1,7 +1,7 @@
+import { TicketReplyForm } from '@/components/ticket-reply-form';
 import AppLayout from '@/layouts/app-layout';
 import type { Ticket } from '@/types/tickets';
 import { Head, Link, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
 import { startTransition, useOptimistic } from 'react';
 
 type Props = {
@@ -10,15 +10,9 @@ type Props = {
     can: { update: boolean; assign: boolean; reply: boolean; internalNote: boolean; close: boolean };
 };
 export default function TicketShow({ ticket, agents, can }: Props) {
-    const reply = useForm<{ body: string; internal: boolean; attachments: File[] }>({ body: '', internal: false, attachments: [] });
     const update = useForm({ status: ticket.status, priority: ticket.priority });
     const [optimisticStatus, setOptimisticStatus] = useOptimistic(ticket.status);
     const assign = useForm({ assignee_id: ticket.assignee?.id?.toString() ?? '' });
-    const submitReply = (e: FormEvent) => {
-        e.preventDefault();
-        reply.post(`/tickets/${ticket.id}/reply`, { forceFormData: true, onSuccess: () => reply.reset() });
-    };
-    const selectAttachments = (files: FileList | null) => reply.setData('attachments', files ? Array.from(files) : []);
     return (
         <AppLayout
             breadcrumbs={[
@@ -90,58 +84,7 @@ export default function TicketShow({ ticket, agents, can }: Props) {
                                 {activity.description} · {new Date(activity.created_at).toLocaleString()}
                             </p>
                         ))}
-                        {can.reply && (
-                            <form onSubmit={submitReply} className="bg-card rounded-xl border p-5">
-                                <textarea
-                                    required
-                                    value={reply.data.body}
-                                    onChange={(e) => reply.setData('body', e.target.value)}
-                                    rows={5}
-                                    placeholder={reply.data.internal ? 'Write an internal note…' : 'Write a reply…'}
-                                    className="bg-background w-full rounded-md border p-3"
-                                />
-                                {reply.errors.body && <p className="text-destructive text-sm">{reply.errors.body}</p>}
-                                <label className="mt-3 block space-y-2 text-sm">
-                                    Attach files (up to 5, 10 MB each)
-                                    <input
-                                        type="file"
-                                        multiple
-                                        accept="image/*,.pdf,.txt"
-                                        onChange={(event) => selectAttachments(event.target.files)}
-                                        className="block w-full text-sm"
-                                    />
-                                </label>
-                                {reply.errors.attachments && <p className="text-destructive text-sm">{reply.errors.attachments}</p>}
-                                {reply.progress && (
-                                    <div className="mt-3 space-y-1" aria-live="polite">
-                                        <div className="bg-muted h-2 overflow-hidden rounded-full">
-                                            <div className="bg-primary h-full transition-all" style={{ width: `${reply.progress.percentage}%` }} />
-                                        </div>
-                                        <p className="text-muted-foreground text-xs">Uploading files: {reply.progress.percentage}%</p>
-                                    </div>
-                                )}
-                                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                                    <label className="flex items-center gap-2 text-sm">
-                                        {can.internalNote && (
-                                            <>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={reply.data.internal}
-                                                    onChange={(e) => reply.setData('internal', e.target.checked)}
-                                                />{' '}
-                                                Internal note
-                                            </>
-                                        )}
-                                    </label>
-                                    <button
-                                        disabled={reply.processing}
-                                        className="bg-primary text-primary-foreground rounded-md px-4 py-2 font-semibold"
-                                    >
-                                        {reply.processing ? 'Sending…' : 'Send reply'}
-                                    </button>
-                                </div>
-                            </form>
-                        )}
+                        {can.reply && <TicketReplyForm ticketId={ticket.id} canInternalNote={can.internalNote} />}
                     </section>
                     <aside className="bg-card h-fit space-y-4 rounded-xl border p-5">
                         <label className="block space-y-2 text-sm font-medium">

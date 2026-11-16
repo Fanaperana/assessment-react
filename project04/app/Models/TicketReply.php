@@ -12,8 +12,24 @@ class TicketReply extends Model
     use HasFactory;
 
     protected $fillable = ['ticket_id', 'user_id', 'body', 'is_internal'];
-    protected function casts(): array { return ['is_internal' => 'boolean']; }
-    public function ticket(): BelongsTo { return $this->belongsTo(Ticket::class); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function attachments(): MorphMany { return $this->morphMany(Attachment::class, 'attachable'); }
+
+    protected function casts(): array
+    {
+        return ['is_internal' => 'boolean'];
+    }
+
+    public function ticket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
 }

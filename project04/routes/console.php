@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use App\Console\Commands\CheckTicketSla;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('tickets:check-sla')->everyFifteenMinutes();

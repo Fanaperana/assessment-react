@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\AgentReplyNotification;
 use App\Notifications\TicketAssignedNotification;
 use App\Notifications\TicketCreatedNotification;
+use Carbon\CarbonInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 
@@ -22,6 +23,7 @@ class TicketService
         $this->activity->record($ticket, $user, 'created', 'Ticket was created.');
         $this->storeAttachments($ticket, $user, $files);
         Notification::send(User::whereIn('role', ['agent', 'admin'])->get(), new TicketCreatedNotification($ticket));
+
         return $ticket;
     }
 
@@ -31,7 +33,9 @@ class TicketService
         $reply = $ticket->replies()->create(['user_id' => $user->id, 'body' => $body, 'is_internal' => $internal]);
         $this->activity->record($ticket, $user, $internal ? 'internal_note' : 'reply', $internal ? 'Internal note added.' : 'Public reply added.');
         $this->storeAttachments($reply, $user, $files);
-        if (!$internal && $user->isAgent() && $ticket->creator) $ticket->creator->notify(new AgentReplyNotification($ticket));
+        if (! $internal && $user->isAgent() && $ticket->creator) {
+            $ticket->creator->notify(new AgentReplyNotification($ticket));
+        }
     }
 
     public function assign(User $user, Ticket $ticket, ?int $assigneeId): void
@@ -39,7 +43,9 @@ class TicketService
         $assignee = $assigneeId ? User::findOrFail($assigneeId) : null;
         $ticket->update(['assignee_id' => $assignee?->id]);
         $this->activity->record($ticket, $user, 'assigned', 'Ticket assignment changed.');
-        if ($assignee) $assignee->notify(new TicketAssignedNotification($ticket));
+        if ($assignee) {
+            $assignee->notify(new TicketAssignedNotification($ticket));
+        }
     }
 
     public function update(User $user, Ticket $ticket, array $data): void
@@ -52,13 +58,15 @@ class TicketService
     private function storeAttachments($attachable, User $user, array $files): void
     {
         foreach ($files as $file) {
-            if (!$file instanceof UploadedFile) continue;
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
             $path = $file->store('attachments', 'private');
             $attachable->attachments()->create(['uploaded_by_id' => $user->id, 'disk' => 'private', 'path' => $path, 'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType() ?: 'application/octet-stream', 'size' => $file->getSize() ?: 0]);
         }
     }
 
-    private function slaDue(string $priority): \Carbon\CarbonInterface
+    private function slaDue(string $priority): CarbonInterface
     {
         return now()->addHours(match ($priority) {
             TicketPriority::Urgent->value => 4,

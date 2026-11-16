@@ -18,6 +18,7 @@ export default function TicketShow({ ticket, agents, can }: Props) {
         e.preventDefault();
         reply.post(`/tickets/${ticket.id}/reply`, { forceFormData: true, onSuccess: () => reply.reset() });
     };
+    const selectAttachments = (files: FileList | null) => reply.setData('attachments', files ? Array.from(files) : []);
     return (
         <AppLayout
             breadcrumbs={[
@@ -47,6 +48,17 @@ export default function TicketShow({ ticket, agents, can }: Props) {
                     <section className="space-y-4">
                         <article className="bg-card rounded-xl border p-6">
                             <p className="whitespace-pre-wrap">{ticket.description}</p>
+                            {ticket.attachments && ticket.attachments.length > 0 && (
+                                <ul className="mt-4 space-y-1 border-t pt-3 text-sm">
+                                    {ticket.attachments.map((attachment) => (
+                                        <li key={attachment.id}>
+                                            <a className="text-primary underline" href={`/attachments/${attachment.id}/download`}>
+                                                {attachment.original_name}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </article>
                         {ticket.replies?.map((reply) => (
                             <article
@@ -60,6 +72,17 @@ export default function TicketShow({ ticket, agents, can }: Props) {
                                     </span>
                                 </div>
                                 <p className="mt-3 whitespace-pre-wrap">{reply.body}</p>
+                                {reply.attachments && reply.attachments.length > 0 && (
+                                    <ul className="mt-3 space-y-1 text-sm">
+                                        {reply.attachments.map((attachment) => (
+                                            <li key={attachment.id}>
+                                                <a className="text-primary underline" href={`/attachments/${attachment.id}/download`}>
+                                                    {attachment.original_name}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </article>
                         ))}
                         {ticket.activities?.map((activity) => (
@@ -78,6 +101,25 @@ export default function TicketShow({ ticket, agents, can }: Props) {
                                     className="bg-background w-full rounded-md border p-3"
                                 />
                                 {reply.errors.body && <p className="text-destructive text-sm">{reply.errors.body}</p>}
+                                <label className="mt-3 block space-y-2 text-sm">
+                                    Attach files (up to 5, 10 MB each)
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*,.pdf,.txt"
+                                        onChange={(event) => selectAttachments(event.target.files)}
+                                        className="block w-full text-sm"
+                                    />
+                                </label>
+                                {reply.errors.attachments && <p className="text-destructive text-sm">{reply.errors.attachments}</p>}
+                                {reply.progress && (
+                                    <div className="mt-3 space-y-1" aria-live="polite">
+                                        <div className="bg-muted h-2 overflow-hidden rounded-full">
+                                            <div className="bg-primary h-full transition-all" style={{ width: `${reply.progress.percentage}%` }} />
+                                        </div>
+                                        <p className="text-muted-foreground text-xs">Uploading files: {reply.progress.percentage}%</p>
+                                    </div>
+                                )}
                                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                                     <label className="flex items-center gap-2 text-sm">
                                         {can.internalNote && (

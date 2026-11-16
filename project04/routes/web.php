@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
+        Route::get('reports', [AdminController::class, 'reports'])->name('reports');
         Route::patch('users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
         Route::post('categories', [AdminController::class, 'storeCategory'])->name('categories.store');
     });

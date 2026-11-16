@@ -11,7 +11,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { Bell, BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -125,6 +125,18 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
 
                     <div className="ml-auto flex items-center space-x-2">
+                        <Link
+                            href="/notifications"
+                            aria-label={`Notifications${page.props.notifications?.unread ? `, ${page.props.notifications.unread} unread` : ''}`}
+                            className="hover:bg-accent relative inline-flex size-9 items-center justify-center rounded-md"
+                        >
+                            <Bell className="size-5" />
+                            {page.props.notifications?.unread > 0 && (
+                                <span className="bg-destructive text-destructive-foreground absolute -top-1 -right-1 min-w-5 rounded-full px-1 text-center text-xs leading-5">
+                                    {page.props.notifications.unread > 99 ? '99+' : page.props.notifications.unread}
+                                </span>
+                            )}
+                        </Link>
                         <div className="relative flex items-center space-x-1">
                             <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
@@ -170,6 +182,15 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
                 </div>
             </div>
+            {(page.props.flash?.success || page.props.flash?.error) && (
+                <div className="mx-auto w-full max-w-7xl px-4 pt-3" role="status" aria-live="polite">
+                    <p
+                        className={`rounded-md border px-4 py-3 text-sm ${page.props.flash.error ? 'border-destructive text-destructive' : 'border-emerald-600/30 text-emerald-700 dark:text-emerald-300'}`}
+                    >
+                        {page.props.flash.error ?? page.props.flash.success}
+                    </p>
+                </div>
+            )}
             {breadcrumbs.length > 1 && (
                 <div className="border-sidebar-border/70 flex w-full border-b">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">

@@ -31,7 +31,7 @@ class TicketService
         $reply = $ticket->replies()->create(['user_id' => $user->id, 'body' => $body, 'is_internal' => $internal]);
         $this->activity->record($ticket, $user, $internal ? 'internal_note' : 'reply', $internal ? 'Internal note added.' : 'Public reply added.');
         $this->storeAttachments($reply, $user, $files);
-        if (!$internal && $ticket->creator) $ticket->creator->notify(new AgentReplyNotification($ticket));
+        if (!$internal && $user->isAgent() && $ticket->creator) $ticket->creator->notify(new AgentReplyNotification($ticket));
     }
 
     public function assign(User $user, Ticket $ticket, ?int $assigneeId): void

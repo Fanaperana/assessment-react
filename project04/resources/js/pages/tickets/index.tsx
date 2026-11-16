@@ -30,7 +30,7 @@ export default function TicketIndex({ tickets, filters, categories, agents, can 
                         </Link>
                     )}
                 </div>
-                <div className="bg-card grid gap-3 rounded-xl border p-4 md:grid-cols-5">
+                <div className="bg-card grid gap-3 rounded-xl border p-4 md:grid-cols-7">
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -84,6 +84,27 @@ export default function TicketIndex({ tickets, filters, categories, agents, can 
                             ))}
                         </select>
                     )}
+                    <select
+                        value={filters.sort ?? 'created_at'}
+                        onChange={(e) => apply('sort', e.target.value)}
+                        aria-label="Sort tickets by"
+                        className="bg-background rounded-md border px-3 py-2 text-sm"
+                    >
+                        <option value="created_at">Date created</option>
+                        <option value="updated_at">Recently updated</option>
+                        <option value="subject">Subject</option>
+                        <option value="status">Status</option>
+                        <option value="priority">Priority</option>
+                    </select>
+                    <select
+                        value={filters.direction ?? 'desc'}
+                        onChange={(e) => apply('direction', e.target.value)}
+                        aria-label="Sort direction"
+                        className="bg-background rounded-md border px-3 py-2 text-sm"
+                    >
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
                 </div>
                 <div className="bg-card overflow-hidden rounded-xl border">
                     <div className="divide-y">
@@ -109,17 +130,19 @@ export default function TicketIndex({ tickets, filters, categories, agents, can 
                     </div>
                     <div className="text-muted-foreground flex justify-between border-t p-4 text-sm">
                         <span>{tickets.total} tickets</span>
-                        <div className="flex gap-2">
-                            {tickets.links?.prev && (
-                                <a href={tickets.links.prev} className="underline">
-                                    Previous
-                                </a>
-                            )}
-                            {tickets.links?.next && (
-                                <a href={tickets.links.next} className="underline">
-                                    Next
-                                </a>
-                            )}
+                        <div className="flex flex-wrap justify-end gap-2" aria-label="Ticket pagination">
+                            {tickets.links.map((link, index) => (
+                                <Link
+                                    key={`${link.label}-${index}`}
+                                    href={link.url ?? '#'}
+                                    preserveState
+                                    preserveScroll
+                                    aria-current={link.active ? 'page' : undefined}
+                                    aria-disabled={!link.url}
+                                    className={`rounded px-2 py-1 underline ${!link.url ? 'pointer-events-none opacity-40' : ''} ${link.active ? 'bg-primary text-primary-foreground no-underline' : ''}`}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>

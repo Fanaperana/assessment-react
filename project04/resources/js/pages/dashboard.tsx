@@ -21,7 +21,7 @@ export default function Dashboard({ stats, recent }: Props) {
             <div className="flex flex-1 flex-col gap-6 rounded-xl p-4">
                 <div className="grid gap-4 md:grid-cols-4">
                     {Object.entries({
-                        'Open tickets': stats.open,
+                        'My open tickets': stats.open,
                         'My assigned': stats.assigned,
                         Unassigned: stats.unassigned,
                         'SLA risk': stats.slaRisk,

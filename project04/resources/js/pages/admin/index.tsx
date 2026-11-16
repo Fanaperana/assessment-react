@@ -10,6 +10,9 @@ export default function AdminIndex({ users, categories }: Props) {
                 <div>
                     <h1 className="text-3xl font-semibold">Administration</h1>
                     <p className="text-muted-foreground mt-2">Manage access and support categories.</p>
+                    <a href="/admin/reports" className="text-primary mt-3 inline-block text-sm font-medium underline">
+                        View reports
+                    </a>
                 </div>
                 <section className="bg-card rounded-xl border p-5">
                     <h2 className="mb-4 text-lg font-semibold">Users and roles</h2>

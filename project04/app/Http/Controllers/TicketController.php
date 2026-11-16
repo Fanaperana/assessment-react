@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\TicketStatus;
 use App\Http\Requests\AssignTicketRequest;
+use App\Http\Requests\CloseTicketRequest;
 use App\Http\Requests\StoreReplyRequest;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
@@ -23,11 +24,14 @@ class TicketController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $sortable = ['created_at', 'updated_at', 'subject', 'status', 'priority'];
+        $sort = in_array($request->input('sort'), $sortable, true) ? $request->input('sort') : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
         $tickets = Ticket::query()->with(['creator:id,name,email', 'assignee:id,name', 'category:id,name'])->withCount('replies')
             ->visibleTo($user)->when($request->status, fn ($q, $v) => $q->where('status', $v))
             ->when($request->priority, fn ($q, $v) => $q->where('priority', $v))->when($request->category, fn ($q, $v) => $q->where('category_id', $v))
             ->when($request->assignee && $user->isAgent(), fn ($q, $v) => $q->where('assignee_id', $v))->search($request->search)
-            ->orderBy($request->input('sort', 'created_at'), $request->input('direction', 'desc') === 'asc' ? 'asc' : 'desc')->paginate(12)->withQueryString();
+            ->orderBy($sort, $direction)->paginate(12)->withQueryString();
         return Inertia::render('tickets/index', ['tickets' => $tickets, 'filters' => $request->only(['status', 'priority', 'category', 'assignee', 'search', 'sort', 'direction']), 'categories' => Category::orderBy('name')->get(['id', 'name']), 'agents' => $user->isAgent() ? User::whereIn('role', ['agent', 'admin'])->get(['id', 'name']) : [], 'can' => ['create' => $user->can('create', Ticket::class)]]);
     }
 
@@ -62,9 +66,8 @@ class TicketController extends Controller
         return back()->with('success', 'Reply added.');
     }
 
-    public function close(Request $request, Ticket $ticket): RedirectResponse
+    public function close(CloseTicketRequest $request, Ticket $ticket): RedirectResponse
     {
-        $this->authorize('close', $ticket);
         $this->service->update($request->user(), $ticket, ['status' => TicketStatus::Closed->value]);
         return back()->with('success', 'Ticket closed.');
     }

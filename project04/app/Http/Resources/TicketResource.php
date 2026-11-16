@@ -13,7 +13,7 @@ class TicketResource extends JsonResource
 
         return [
             'id' => $this->id, 'subject' => $this->subject, 'description' => $this->description,
-            'status' => $this->status->value, 'priority' => $this->priority->value,
+            'status' => $this->status?->value, 'priority' => $this->priority?->value,
             'category' => $this->whenLoaded('category', fn () => ['id' => $this->category->id, 'name' => $this->category->name]),
             'creator' => $this->whenLoaded('creator', fn () => ['id' => $this->creator->id, 'name' => $this->creator->name]),
             'assignee' => $this->whenLoaded('assignee', fn () => $this->assignee ? ['id' => $this->assignee->id, 'name' => $this->assignee->name] : null),

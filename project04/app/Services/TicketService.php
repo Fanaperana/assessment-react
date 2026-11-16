@@ -19,7 +19,14 @@ class TicketService
 
     public function create(User $user, array $data, array $files = []): Ticket
     {
-        $ticket = Ticket::create([...$data, 'created_by_id' => $user->id, 'sla_due_at' => $this->slaDue($data['priority'] ?? TicketPriority::Normal->value)]);
+        $priority = $data['priority'] ?? TicketPriority::Normal->value;
+        $ticket = Ticket::create([
+            ...$data,
+            'created_by_id' => $user->id,
+            'status' => $data['status'] ?? TicketStatus::Open->value,
+            'priority' => $priority,
+            'sla_due_at' => $this->slaDue($priority),
+        ]);
         $this->activity->record($ticket, $user, 'created', "{$user->name} created the ticket.");
         $this->storeAttachments($ticket, $user, $files);
         Notification::send(User::whereIn('role', ['agent', 'admin'])->get(), new TicketCreatedNotification($ticket));

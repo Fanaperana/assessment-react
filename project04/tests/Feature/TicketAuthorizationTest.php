@@ -129,7 +129,10 @@ it('creates a ticket through the Sanctum API', function () {
     $user = User::factory()->create();
     $category = Category::factory()->create();
     Sanctum::actingAs($user);
-    $this->postJson('/api/tickets', ['subject' => 'API request', 'description' => 'Created through the public API.', 'category_id' => $category->id, 'priority' => 'normal'])->assertCreated()->assertJsonPath('data.subject', 'API request');
+    $this->postJson('/api/tickets', ['subject' => 'API request', 'description' => 'Created through the public API.', 'category_id' => $category->id, 'priority' => 'normal'])
+        ->assertCreated()
+        ->assertJsonPath('data.subject', 'API request')
+        ->assertJsonPath('data.status', 'open');
 });
 
 it('adds public replies through the Sanctum API', function () {

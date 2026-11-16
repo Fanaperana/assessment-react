@@ -45,6 +45,8 @@ class TicketController extends Controller
         abort_if($data['internal'] ?? false, 403, 'Internal notes are not available through this endpoint.');
         $this->service->reply($request->user(), $ticket, $data['body'], false, $request->file('attachments', []));
 
-        return response()->json(new TicketReplyResource($ticket->replies()->latest()->first()), 201);
+        return (new TicketReplyResource($ticket->replies()->latest()->first()))
+            ->response()
+            ->setStatusCode(201);
     }
 }

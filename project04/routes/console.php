@@ -2,6 +2,9 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('tickets:check-sla')->everyFifteenMinutes();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

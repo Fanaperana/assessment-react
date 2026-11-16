@@ -25,6 +25,8 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    notifications: { unread: number };
+    flash: { success?: string; error?: string };
     [key: string]: unknown;
 }
 
@@ -36,5 +38,6 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    role: 'customer' | 'agent' | 'admin';
     [key: string]: unknown; // This allows for additional properties...
 }

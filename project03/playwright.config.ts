@@ -1,7 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const databaseUrl = process.env.E2E_DATABASE_URL ?? "file:./test-e2e.db";
+
 const env = {
-  DATABASE_URL: "file:./test-e2e.db",
+  DATABASE_URL: databaseUrl,
   BETTER_AUTH_SECRET: "playwright-test-secret-at-least-32-characters-long",
   BETTER_AUTH_URL: "http://localhost:3100",
   NEXT_PUBLIC_APP_URL: "http://localhost:3100",

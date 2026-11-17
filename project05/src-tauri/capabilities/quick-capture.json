@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "quick-capture-window",
+  "description": "The quick-capture window can create an Inbox note but cannot access files or dialogs.",
+  "windows": ["quick-capture"],
+  "permissions": ["capture-note", "core:window:allow-close"]
+}

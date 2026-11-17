@@ -1,0 +1,7 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+.npm-cache-p05/
+package-lock.json
+ASSIGNMENT.md

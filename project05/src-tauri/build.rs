@@ -1,3 +1,29 @@
 fn main() {
-    tauri_build::build()
+    tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
+        tauri_build::AppManifest::new().commands(&[
+            "list_notebooks",
+            "create_notebook",
+            "rename_notebook",
+            "delete_notebook",
+            "list_notes",
+            "get_note",
+            "create_note",
+            "update_note",
+            "trash_note",
+            "restore_note",
+            "empty_trash",
+            "set_note_pinned",
+            "set_note_tags",
+            "list_tags",
+            "search_notes",
+            "quick_capture",
+            "import_markdown_files",
+            "export_markdown",
+            "get_timer_state",
+            "start_timer",
+            "stop_timer",
+            "quit_app",
+        ]),
+    ))
+    .expect("Failed to generate FocusNotes build metadata");
 }

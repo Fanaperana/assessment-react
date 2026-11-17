@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.npm-cache-p05/
 *.local
 
 # Editor directories and files

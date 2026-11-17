@@ -28,6 +28,19 @@ const editorProps = {
 };
 
 describe("NoteEditor", () => {
+  it("does not interpret raw HTML or executable Markdown links", () => {
+    const { container } = render(
+      <NoteEditor
+        {...editorProps}
+        note={{
+          ...note,
+          body: "<script>alert(1)</script>\n\n[bad](javascript:alert(1))",
+        }}
+      />,
+    );
+    expect(container.querySelector("script")).toBeNull();
+    expect(container.querySelector('a[href^="javascript:"]')).toBeNull();
+  });
   it("loads a note via mockIPC", async () => {
     mockIPC((command) => (command === "get_note" ? note : undefined));
     expect(await api.getNote("n1")).toEqual(note);

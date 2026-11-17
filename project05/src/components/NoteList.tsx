@@ -48,6 +48,7 @@ export function NoteList({
       <label className="search-field">
         <Search size={15} />
         <input
+          aria-label="Search notes"
           value={query}
           onChange={(event) => onQuery(event.target.value)}
           onKeyDown={onSearchKeyDown}

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "../lib/api";
+import { useTheme } from "../hooks/useTheme";
 
 export function QuickCapture() {
+  useTheme();
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);

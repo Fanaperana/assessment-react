@@ -91,16 +91,16 @@ fn emit_tick(app: &AppHandle, snapshot: &TimerSnapshot) {
             "FocusNotes".to_owned()
         };
         let _ = tray.set_title(Some(&label));
-        let _ = tray.set_tooltip(Some(format!("FocusNotes ? {label}")));
+        let _ = tray.set_tooltip(Some(format!("FocusNotes - {label}")));
     }
 }
 
 fn record_and_notify(app: &AppHandle, mode: TimerMode) {
-    if let Some(state) = app.try_state::<AppState>() {
-        if let Ok(database) = state.database.lock() {
-            let minutes = duration_for(mode) / 60;
-            let _ = crate::db::repositories::timer::record_completion(&database, mode, minutes);
-        }
+    if let Some(state) = app.try_state::<AppState>()
+        && let Ok(database) = state.database.lock()
+    {
+        let minutes = duration_for(mode) / 60;
+        let _ = crate::db::repositories::timer::record_completion(&database, mode, minutes);
     }
     let (title, body) = match mode {
         TimerMode::Focus => ("Focus session complete", "Time for a short break."),

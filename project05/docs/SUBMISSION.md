@@ -19,7 +19,7 @@ not demonstrate the native integrations.
 - [ ] Part E — Native features: menus, tray, capture shortcut, scoped file dialogs and window-state restoration implemented; desktop verification pending.
 - [ ] Part F — Focus timer: Rust timer, tick events, notifications and daily persisted counts implemented; Rust/desktop verification pending.
 - [x] Part G — Security: per-window command capabilities, strict CSP, safe Markdown, user-selected file scopes.
-- [ ] Part H — Testing and CI: tests written and CI configured; Rust execution awaits a working native toolchain or CI result.
+- [x] Part H — Testing and CI: 29 frontend tests, 33 Rust tests, and CI checks all pass.
 - [ ] Actual desktop GIF/MP4 and native acceptance checks.
 - [ ] Bonus: X1–X5 not claimed.
 
@@ -28,18 +28,18 @@ not demonstrate the native integrations.
 - [x] `npm run build`
 - [x] `npm test`: ESLint, Prettier and **29 frontend tests** pass.
 - [x] `cargo fmt --check`
-- [ ] `cargo clippy --all-targets -- -D warnings`
-- [ ] `cargo test`: **33 Rust tests** written; execution pending.
+- [x] CI `cargo clippy --all-targets -- -D warnings`
+- [x] CI `cargo test`: **33 Rust tests** pass.
 - [x] Small source files; no SQL or direct invokes in components; no committed secrets.
 - [ ] No errors in the running native app console (requires desktop verification).
-- [ ] All checks from the project's README pass locally (Rust toolchain pending).
-- [ ] General rules Q1–Q5 (Clippy verification pending; commits include requirement IDs).
-- [x] Number of tests: **29 frontend tests** pass; **33 Rust tests** authored, not yet executed.
+- [x] All README checks pass in CI; local Windows compilation needs the missing Visual C++ runtime library.
+- [ ] General rules Q1–Q5 (source formatting and small commits pass; native Windows checks and recording pending).
+- [x] Number of tests: **29 frontend tests** and **33 Rust tests** pass.
 
 Local Rust compilation currently stops in the Windows toolchain before compiling
-application code: the incomplete Windows SDK is missing `kernel32.lib`. The C++
-workload/SDK installation is in progress. The draft PR must remain a draft until
-Rust checks and native acceptance checks have completed.
+application code: this machine's Visual C++ installation does not provide
+`msvcrt.lib`. CI verifies Rust on Linux successfully. Native Windows acceptance
+checks and the recording remain to complete before marking the PR ready.
 
 ## Architecture
 
